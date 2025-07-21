@@ -1,26 +1,68 @@
-import express from 'express';
-import Jwt  from 'jsonwebtoken';
- 
+import express, { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { UserModel } from "./db";
+
+const { JWT_SECRET } = process.env as { JWT_SECRET?: string };
 
 const app = express();
+app.use(express.json());
 
-app.post('/api/v1/signin', (req, res) => {})
+// POST /signin placeholder (empty logic to keep original intent)
+app.post("/api/v1/signin", async (req: Request, res: Response) => {
+  const username = req.body.username;
+  const password = req.body.password;
 
-app.post('/api/v1/signup', (req, res) => {})
+  if (!JWT_SECRET) {
+    throw new Error("Missing JWT_SECRET in environment variables");
+  }
+  const user = await UserModel.findOne({ username, password });
 
-app.post('/api/v1/content', (req, res) => {})
+  if (!user) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+  const token = jwt.sign({ id: user._id }, JWT_SECRET);
+  return res.json({ token });
+});
 
-app.get('/api/v1/content', (req, res) => {})
+// POST /signup
+app.post("/api/v1/signup", async (req: Request, res: Response) => {
+  try {
+    const username = req.body.username;
+    const password = req.body.password;
 
-app.delete('/api/v1/content', (req, res) => {})
+  const user = await UserModel.create({ username, password });
+res.status(201).json({ message: "User created", userId: user._id });
 
-app.put('/api/v1/content', (req, res) => {})
+  } catch (e: any) {
+    if (e?.code === 11000) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+    console.error(e);
+    res.status(500).json({ message: "Internal error" });
+  }
+});
 
-app.get('/api/v1/brain/share', (req, res) => {})
+// Content placeholders
+app.post("/api/v1/content", (_req: Request, res: Response) =>
+  res.json({ placeholder: true })
+);
+app.get("/api/v1/content", (_req: Request, res: Response) =>
+  res.json({ placeholder: true })
+);
+app.delete("/api/v1/content", (_req: Request, res: Response) =>
+  res.json({ placeholder: true })
+);
+app.put("/api/v1/content", (_req: Request, res: Response) =>
+  res.json({ placeholder: true })
+);
 
-app.get('/api/v1/brain/:shareLink', (req, res) => {})
+// Brain share placeholders
+app.get("/api/v1/brain/share", (_req: Request, res: Response) =>
+  res.json({ placeholder: true })
+);
+app.get("/api/v1/brain/:shareLink", (req: Request, res: Response) =>
+  res.json({ shareLink: req.params.shareLink, placeholder: true })
+);
 
-
-
-
-
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
