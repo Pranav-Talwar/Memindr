@@ -30,12 +30,24 @@ interface IContent {
   title: string;
 link: string;
 tags: string[];
+
   }
 const ContentSchema = new Schema<IContent>({
   title: { type: String, required: true },
   link: { type: String, required: true },
+  //@ts-ignore
   tags: { type: mongoose.Types.ObjectId, ref: "Tag"},
-  userId: { type: mongoose.Types.ObjectId, ref : "User", required: true },
+  userId: { type: mongoose.Types.ObjectId, ref : "User"},
 });
 
 export const ContentModel = model<IContent>("Content", ContentSchema);
+
+interface ILink {
+  hash: string;
+}
+const LinkSchema = new Schema<ILink> ({
+  hash : String,
+    //@ts-ignore
+  userId : { type: mongoose.Types.ObjectId, ref: "User" , required: true , unique:true }})
+
+  export  const LinkModel = model<ILink>("Links", LinkSchema)
