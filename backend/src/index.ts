@@ -142,10 +142,9 @@ app.get("/api/v1/brain/:shareLink", async (req: Request, res: Response) => {
     //@ts-ignore
     userId: link.userId,
   })
-  const user = await UserModel.findOne({
-    // @ts-ignore
-    userId:link.userId, 
-  })
+ const user = await UserModel.findById(
+    //@ts-ignore
+  link.userId); 
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
