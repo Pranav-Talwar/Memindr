@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { ContentModel, LinkModel, UserModel } from "./db";
+import { CollectionModel, ContentModel, LinkModel, UserModel } from "./db";
 import { userMiddleware } from "./middleware";
 import { random } from "./utils";
 
@@ -56,8 +56,7 @@ app.post(
       link,
       //@ts-ignore
       userId: req.userId,
-      // tags: [],
-    })
+    });
     res.status(201).json({
       message: "Content created",
     });
@@ -136,23 +135,107 @@ app.get("/api/v1/brain/:shareLink", async (req: Request, res: Response) => {
   });
   if (!link) {
     return res.status(404).json({ message: "Share link not found" });
-    
   }
   const content = await ContentModel.find({
     //@ts-ignore
     userId: link.userId,
-  })
- const user = await UserModel.findById(
+  });
+  const user = await UserModel.findById(
     //@ts-ignore
-  link.userId); 
+    link.userId
+  );
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
   res.json({
-  username: user.username,
-    content:content
-  }); 
+    username: user.username,
+    content: content,
+  });
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
+
+app.post(
+  "/api/v1/collections",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    // @ts-ignore set by userMiddleware
+    const userId = req.userId;
+    const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+    const color = req.body.color;
+
+    if (!name) {
+      return res.status(400).json({ message: "name is required" });
+    }
+
+    try {
+      const collection = await CollectionModel.create({
+        name,
+        color: color ?? "#ffffffff",
+        userId,
+        isSystem: false,
+      });
+
+      return res.status(201).json({
+        message: "Collection created",
+        collectionId: collection._id,
+        name: collection.name,
+        color: collection.color,
+        isSystem: collection.isSystem,
+    
+      });
+    } catch (e: any) {
+      if (e?.code === 11000) {
+        return res.status(409).json({ message: "Collection already exists" });
+      }
+      console.error(e);
+      return res.status(500).json({ message: "Internal error" });
+    }
+  }
+);
+
+app.get(
+  "/api/v1/collections",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      // @ts-ignore
+      const userId = req.userId;
+
+      const collections = await CollectionModel
+        .find({ userId })
+        .sort({ createdAt: -1 })
+        .select("_id name color isSystem createdAt updatedAt");
+
+      return res.json({ collections });
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ message: "Internal error" });
+    }
+  }
+);
+
+app.delete(
+  "/api/v1/collections",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    const collectionId = req.body.collectionId;
+    
+    if (!collectionId) {
+      return res.status(400).json({ message: "collectionId is required" });
+    }
+
+    const outcome = await CollectionModel.deleteOne({
+  _id: collectionId,
+        //@ts-ignore
+      userId: req.userId,
+    });
+    //
+      if (outcome.deletedCount === 0) {
+    return res.status(404).json({ message: "Collection not found" });
+  }
+    res.json({
+      message: "deleted",
+    });
+  })

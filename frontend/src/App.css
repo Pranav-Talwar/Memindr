@@ -1,1 +1,10 @@
 @import "tailwindcss";
+.card {
+    @apply gap-1 w-100 h-100 rounded-2xl bg-[var(--color-base-dark)] overflow-hidden;
+  }
+/* Masonry break helpers */
+.break-inside-avoid-column {
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid; /* Safari */
+  page-break-inside: avoid;
+}
