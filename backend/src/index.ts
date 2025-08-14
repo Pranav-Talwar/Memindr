@@ -48,20 +48,50 @@ app.post(
   "/api/v1/content",
   userMiddleware,
   async (req: Request, res: Response) => {
-    const title = req.body.title;
+   // inside POST /api/v1/content
+const { title, link, type, collectionId, collectionName } = req.body as {
+  title: string;
+  link: string;
+  type?: "youtube" | "twitter" | "article";
+  collectionId?: string;
+  collectionName?: string;   // <— new input from the drawer
+};
 
-    const link = req.body.link;
-    await ContentModel.create({
-      title,
-      link,
-      //@ts-ignore
-      userId: req.userId,
-    });
-    res.status(201).json({
-      message: "Content created",
-    });
+// guard
+if (!title || !link) {
+  return res.status(400).json({ message: "title and link are required" });
+}
+
+// prefer explicit id if present
+let resolvedCollectionId = collectionId;
+
+// fallback: translate name -> id for this user
+if (!resolvedCollectionId && typeof collectionName === "string" && collectionName.trim()) {
+  const col = await CollectionModel.findOne({
+    // @ts-ignore
+    userId: req.userId,
+    name: collectionName.trim(),
+  }).select("_id");
+  if (!col) {
+    return res.status(400).json({ message: "collection not found" });
+  }
+  resolvedCollectionId = String(col._id);
+}
+
+await ContentModel.create({
+  title,
+  link,
+  ...(type ? { type } : {}),
+  ...(resolvedCollectionId ? { collectionId: resolvedCollectionId } : {}),
+  // @ts-ignore
+  userId: req.userId,
+});
+
+return res.status(201).json({ message: "Content created" });
+
   }
 );
+
 app.get(
   "/api/v1/content",
   userMiddleware,
@@ -70,7 +100,8 @@ app.get(
     const userId = req.userId;
     const content = await ContentModel.find({
       userId,
-    }).populate("userId", "username");
+    }).populate("userId", "username")
+      .populate("collectionId", "name color")
     res.json({
       content,
     });

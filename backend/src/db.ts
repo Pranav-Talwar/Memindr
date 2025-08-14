@@ -25,13 +25,14 @@ const UserSchema = new Schema<IUser>({
 { timestamps: true });
 
 export const UserModel = model<IUser>("User", UserSchema);
-
+type Source = "youtube" | "twitter" | "article";
 
 interface IContent {
   title: string;
 link: string;
   collectionId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId; 
+  type?: Source;
   }
 const ContentSchema = new Schema<IContent>({
   title: { type: String, required: true },
@@ -40,6 +41,8 @@ const ContentSchema = new Schema<IContent>({
   collectionId: { type: mongoose.Types.ObjectId, ref: "Collection" , },
 // @ts-ignore
   userId: { type: mongoose.Types.ObjectId, ref : "User" , required: true },
+  type: { type: String, enum: ["youtube", "twitter", "article"] },
+
 },
 { timestamps: true }
 );
