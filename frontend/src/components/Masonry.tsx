@@ -11,5 +11,5 @@ export default function Masonry({ children }: { children: ReactNode }) {
         </div>
       ))}
     </div>
-  );
+  ); 
 }

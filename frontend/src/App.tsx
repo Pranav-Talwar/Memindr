@@ -5,6 +5,7 @@ import Topbar from "./components/Topbar";
 import ContentCard from "./components/ContentCard";
 import Masonry from "./components/Masonry";
 import "./app.css";
+import CreateContentModal from "./components/CreateContentModal";
 
 type DemoItem = {
   title: string;
@@ -15,7 +16,8 @@ type DemoItem = {
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+const handleOpenModal = () => setModalOpen(true);
+const handleCloseModal = () => setModalOpen(false);
   // Demo data shaped like your backend Content: { title, link, collection? }
   const demo: DemoItem[] = [
     {
@@ -48,16 +50,20 @@ export default function App() {
       type: "youtube",
       collection: { name: "TV", color: "#F5B7B1" },
     },
-    {
+    { 
       title: "Great REST API design article",
       link: "https://martinfowler.com/articles/richardsonMaturityModel.html",
       type: "article",
       collection: { name: "Backend", color: "#D7BDE2" },
     },
-  ];
+  ]; 
+
+ const [modalOpen, setModalOpen] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden">
+     
+    <div className="flex h-screen overflow-hidden">  
+    <CreateContentModal open={modalOpen} onClose={() => handleCloseModal()} />
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {isSidebarOpen && (
@@ -70,7 +76,7 @@ export default function App() {
       )}
 
       <div className="flex-1 flex flex-col bg-[#121212] text-white">
-        <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
+        <Topbar onMenuClick={() => setIsSidebarOpen(true)} onAddClick={() => setModalOpen(true)} />
         <main className="p-6 lg:p-10 overflow-y-auto">
           <Masonry>
             {demo.map((c, i) => (
@@ -82,6 +88,7 @@ export default function App() {
                 collection={c.collection}
               />
             ))}
+            
           </Masonry>
         </main>
       </div>

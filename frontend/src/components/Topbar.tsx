@@ -1,13 +1,13 @@
 // components/Topbar.tsx
-import React from "react";
+import React, { useState } from "react";
 import { Menu, Search, Share2, Plus } from "lucide-react";
-
-type TopbarProps = { onMenuClick: () => void };
+import CreateContentModal from "./CreateContentModal";
+type TopbarProps = { onMenuClick: () => void ; onAddClick?: () => void };
 
 const tags = ["All", "YouTube", "Twitter", "Medium"];
 const defaultActive = "All";
 
-export default function Topbar({ onMenuClick }: TopbarProps) {
+export default function Topbar({ onMenuClick , onAddClick }: TopbarProps) {
   return (
     <div className="flex items-center justify-between px-4 lg:px-10 py-3.5 border-b border-[#1E1E1E] bg-[#121212]">
       {/* Left: menu + search */}
@@ -62,6 +62,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
           type="button"
           aria-label="Add item"
           className="w-9 h-9 rounded-full bg-[#F3E3B3] text-black flex items-center justify-center hover:scale-105 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F3E3B3]/40"
+          onClick={() => onAddClick?.()}
         >
           <Plus size={20} />
         </button>
