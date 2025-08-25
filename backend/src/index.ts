@@ -3,12 +3,15 @@ import jwt from "jsonwebtoken";
 import { CollectionModel, ContentModel, LinkModel, UserModel } from "./db";
 import { userMiddleware } from "./middleware";
 import { random } from "./utils";
+import cors from "cors";
 
 const { JWT_SECRET } = process.env as { JWT_SECRET?: string };
 
 const app = express();
-app.use(express.json());
+app.use(cors({ origin: "http://localhost:5173" }));
 
+app.use(express.json());
+ 
 // POST /signin placeholder (empty logic to keep original intent)
 app.post("/api/v1/signin", async (req: Request, res: Response) => {
   const username = req.body.username;

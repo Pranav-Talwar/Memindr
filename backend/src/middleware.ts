@@ -1,22 +1,37 @@
-import express, { Request, Response, NextFunction } from "express";
+// src/middleware.ts
+import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { decode } from "punycode";
 
-export const userMiddleware = async (
+interface JwtPayload {
+  id: string;
+}
+
+export const userMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const header = req.headers["authorization"];
-  const decoded = jwt.verify(
-    header as string,
-    process.env.JWT_SECRET as string
-  );
-  if (decoded) {
-    //@ts-ignore
+  const authHeader = req.headers["authorization"];
+
+  // Guard: header must exist and start with "Bearer "
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as JwtPayload;
+
+    // @ts-ignore
     req.userId = decoded.id;
+
     next();
-  } else {
-    res.status(401).json({ message: "Unauthorized" });
+  } catch (err) {
+    console.error("JWT verification failed:", err);
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
