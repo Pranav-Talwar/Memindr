@@ -28,7 +28,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4">
-        <h1 id="app-title" className="text-4xl ml-2 italic text-[#F3E3B3]">Mindra</h1>
+        <h1 id="app-title" className="text-4xl ml-2 italic text-[#F3E3B3]">Mindora</h1>
         <button
           type="button"
           className="lg:hidden text-gray-400 hover:text-white"
